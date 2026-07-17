@@ -1,0 +1,33 @@
+# ── Secrets ───────────────────────────────────────────────────────────────────
+.env
+.env.local
+*.pem
+*.key
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+gemini-env/
+venv/
+.venv/
+env/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# ── Database (regenerated on first run) ───────────────────────────────────────
+*.db
+*.db-journal
+*.sqlite3
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+.idea/
+.vscode/
+*.swp

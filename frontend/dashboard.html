@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Momo House — Restaurant Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #ff6b35;
+    --accent2: #ffd166;
+    --green: #06d6a0;
+    --red: #ef476f;
+    --text: #f0ede8;
+    --muted: #888;
+    --radius: 14px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .logo-icon {
+    font-size: 32px;
+    margin-bottom: 4px;
+  }
+
+  .logo h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .logo p {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    position: relative;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+
+  .nav-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(255, 107, 53, 0.08);
+  }
+
+  .nav-icon { font-size: 18px; width: 22px; text-align: center; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    margin-left: auto;
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .sidebar-footer p {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── Main ── */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    padding: 32px;
+    min-height: 100vh;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── Header ── */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .page-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .header-actions { display: flex; gap: 12px; align-items: center; }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #e85a28; transform: translateY(-1px); }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--border); }
+
+  /* ── Stats Grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: var(--accent); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .stat-card.orange::before { background: var(--accent); }
+  .stat-card.yellow::before { background: var(--accent2); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.blue::before { background: #74b9ff; }
+  .stat-card.purple::before { background: #a29bfe; }
+
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .stat-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .stat-icon {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 28px;
+    opacity: 0.15;
+  }
+
+  /* ── Orders Table ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .section-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .filter-tabs { display: flex; gap: 4px; }
+
+  .filter-tab {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .filter-tab:hover, .filter-tab.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  th {
+    text-align: left;
+    padding: 14px 24px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  td {
+    padding: 16px 24px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-confirmed { background: rgba(6, 214, 160, 0.12); color: var(--green); }
+  .badge-preparing { background: rgba(255, 209, 102, 0.12); color: var(--accent2); }
+  .badge-delivered { background: rgba(114, 114, 255, 0.12); color: #a29bfe; }
+  .badge-cancelled { background: rgba(239, 71, 111, 0.12); color: var(--red); }
+
+  .phone-chip {
+    font-family: monospace;
+    font-size: 12px;
+    background: var(--surface2);
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: var(--muted);
+  }
+
+  .items-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .item-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .action-btn {
+    padding: 5px 12px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    margin-right: 4px;
+    transition: all 0.2s;
+  }
+
+  .action-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .action-btn.deliver { background: rgba(6,214,160,0.1); color: var(--green); border-color: var(--green); }
+  .action-btn.deliver:hover { background: var(--green); color: #000; }
+
+  /* ── Popular Items ── */
+  .popular-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    padding: 20px 24px;
+  }
+
+  .popular-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .popular-item .emoji { font-size: 28px; margin-bottom: 8px; }
+  .popular-item .name { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .popular-item .count { font-size: 22px; font-weight: 800; font-family: 'Syne', sans-serif; color: var(--accent); }
+  .popular-item .label { font-size: 10px; color: var(--muted); }
+
+  /* ── Customers ── */
+  .customer-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .customer-info { display: flex; align-items: center; }
+
+  /* ── Live Chat ── */
+  .chat-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    height: calc(100vh - 160px);
+  }
+
+  .chat-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow-y: auto;
+  }
+
+  .chat-list-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .chat-item {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .chat-item:hover, .chat-item.active { background: var(--surface2); }
+
+  .chat-item-phone { font-size: 12px; font-weight: 600; font-family: monospace; color: var(--text); }
+  .chat-item-preview { font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chat-item-time { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  .chat-window {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .chat-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .msg {
+    max-width: 70%;
+    padding: 10px 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .msg.user {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg.assistant {
+    background: rgba(255, 107, 53, 0.12);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+  .chat-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: var(--muted);
+    gap: 8px;
+  }
+
+  .chat-empty .icon { font-size: 48px; opacity: 0.3; }
+
+  /* ── Loading ── */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px; color: var(--muted); gap: 10px; font-size: 13px;
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 100;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    padding: 60px; text-align: center; color: var(--muted);
+  }
+
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+
+  /* ── Live indicator ── */
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(6, 214, 160, 0.1);
+    border: 1px solid rgba(6, 214, 160, 0.3);
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; color: var(--green);
+  }
+
+  .scrollbar-hide { scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🍜</div>
+    <h1>Momo House</h1>
+    <p>Restaurant Manager</p>
+  </div>
+
+  <nav>
+    <div class="nav-item active" onclick="navigate('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+      <span class="status-dot"></span>
+    </div>
+    <div class="nav-item" onclick="navigate('orders')">
+      <span class="nav-icon">🛒</span> Orders
+      <span class="nav-badge" id="pending-badge">0</span>
+    </div>
+    <div class="nav-item" onclick="navigate('customers')">
+      <span class="nav-icon">👥</span> Customers
+    </div>
+    <div class="nav-item" onclick="navigate('conversations')">
+      <span class="nav-icon">💬</span> Conversations
+    </div>
+    <div class="nav-item" onclick="navigate('menu')">
+      <span class="nav-icon">🍽️</span> Menu
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="live-badge">
+      <span>●</span> WhatsApp Live
+    </div>
+    <p style="margin-top:10px;font-size:10px;">Auto-refreshes every 30s</p>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+
+  <!-- Dashboard Page -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div>
+        <h2>Dashboard</h2>
+        <p style="color:var(--muted);font-size:13px;margin-top:4px;" id="last-updated">Loading...</p>
+      </div>
+      <div class="header-actions">
+        <span class="live-badge"><span>●</span> Live</span>
+        <button class="btn btn-ghost" onclick="refreshAll()">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="loading"><div class="spinner"></div> Loading stats...</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">🔥 Popular Items</span>
+        </div>
+        <div id="popular-items"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">🕐 Recent Orders</span>
+          <button class="btn btn-ghost" onclick="navigate('orders')" style="font-size:12px;padding:6px 12px;">View All</button>
+        </div>
+        <div id="recent-orders-mini"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Page -->
+  <div class="page" id="page-orders">
+    <div class="page-header">
+      <h2>Orders</h2>
+      <div class="header-actions">
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterOrders('', this)">All</button>
+          <button class="filter-tab" onclick="filterOrders('confirmed', this)">New</button>
+          <button class="filter-tab" onclick="filterOrders('preparing', this)">Preparing</button>
+          <button class="filter-tab" onclick="filterOrders('delivered', this)">Delivered</button>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div id="orders-table"><div class="loading"><div class="spinner"></div> Loading orders...</div></div>
+    </div>
+  </div>
+
+  <!-- Customers Page -->
+  <div class="page" id="page-customers">
+    <div class="page-header">
+      <h2>Customers</h2>
+    </div>
+    <div class="section">
+      <div id="customers-table"><div class="loading"><div class="spinner"></div> Loading customers...</div></div>
+    </div>
+  </div>
+
+  <!-- Conversations Page -->
+  <div class="page" id="page-conversations">
+    <div class="page-header">
+      <h2>Conversations</h2>
+    </div>
+    <div class="chat-layout">
+      <div class="chat-list scrollbar-hide">
+        <div class="chat-list-header">💬 Active Chats</div>
+        <div id="chat-list-items"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+      <div class="chat-window">
+        <div id="chat-content" class="chat-empty">
+          <div class="icon">💬</div>
+          <p>Select a conversation to view</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu Page -->
+  <div class="page" id="page-menu">
+    <div class="page-header">
+      <h2>Menu</h2>
+      <span style="color:var(--muted);font-size:13px;">6 items available</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      ${buildMenuCards()}
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg">Done!</span>
+</div>
+
+<script>
+const API = '/api';
+
+// ── Navigation ──────────────────────────────────────────────────────────────
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  const pages = ['dashboard', 'orders', 'customers', 'conversations', 'menu'];
+  const idx = pages.indexOf(page);
+  if (idx !== -1) navItems[idx].classList.add('active');
+  
+  if (page === 'orders') loadOrders('');
+  if (page === 'customers') loadCustomers();
+  if (page === 'conversations') loadConversationList();
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+function showToast(msg, icon = '✅') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const res = await fetch(API + '/stats');
+    const d = await res.json();
+    
+    document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+    document.getElementById('pending-badge').textContent = d.pending_orders;
+
+    const emojis = {'chicken momo':'🥟','veg momo':'🥟','chowmein':'🍜','pizza medium':'🍕','pizza large':'🍕','coke':'🥤'};
+
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card orange">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value">${d.total_orders}</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-icon">💰</div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">Rs.${d.total_revenue.toLocaleString()}</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-label">Pending Orders</div>
+        <div class="stat-value">${d.pending_orders}</div>
+        <div class="stat-sub">Need action</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value">${d.total_customers}</div>
+        <div class="stat-sub">Unique phones</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon">📅</div>
+        <div class="stat-label">Today's Orders</div>
+        <div class="stat-value">${d.today_orders}</div>
+        <div class="stat-sub">Last 24 hours</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">📈</div>
+        <div class="stat-label">Today's Revenue</div>
+        <div class="stat-value">Rs.${d.today_revenue.toLocaleString()}</div>
+        <div class="stat-sub">Last 24 hours</div>
+      </div>
+    `;
+
+    const popularEmojis = {'chicken momo':'🥟','veg momo':'🥟','chowmein':'🍜','pizza medium':'🍕','pizza large':'🍕','coke':'🥤'};
+    if (d.popular_items && d.popular_items.length > 0) {
+      document.getElementById('popular-items').innerHTML = `
+        <div class="popular-grid">
+          ${d.popular_items.map(item => `
+            <div class="popular-item">
+              <div class="emoji">${popularEmojis[item.name?.toLowerCase()] || '🍽️'}</div>
+              <div class="name">${item.name}</div>
+              <div class="count">${item.count}</div>
+              <div class="label">orders</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } else {
+      document.getElementById('popular-items').innerHTML = '<div class="empty-state"><div class="icon">📊</div><p>No orders yet</p></div>';
+    }
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ── Orders ───────────────────────────────────────────────────────────────────
+let currentFilter = '';
+
+function filterOrders(status, btn) {
+  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = status;
+  loadOrders(status);
+}
+
+async function loadOrders(status = '') {
+  try {
+    const url = status ? `${API}/orders?status=${status}` : `${API}/orders`;
+    const res = await fetch(url);
+    const orders = await res.json();
+
+    if (orders.length === 0) {
+      document.getElementById('orders-table').innerHTML = '<div class="empty-state"><div class="icon">🛒</div><p>No orders found</p></div>';
+      return;
+    }
+
+    document.getElementById('orders-table').innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Phone</th><th>Items</th><th>Total</th>
+            <th>Type</th><th>Status</th><th>Time</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${orders.map(o => `
+            <tr>
+              <td style="color:var(--muted);font-size:12px;">#${o.id}</td>
+              <td><span class="phone-chip">${o.phone.replace('whatsapp:','')}</span></td>
+              <td>
+                <div class="items-preview">
+                  ${o.items.map(i => `<span class="item-tag">${i.qty}× ${i.name}</span>`).join('')}
+                </div>
+              </td>
+              <td style="font-weight:700;color:var(--accent2);">Rs. ${o.total}</td>
+              <td style="font-size:12px;">${o.delivery_type || '—'}</td>
+              <td><span class="badge badge-${o.status}">${statusIcon(o.status)} ${o.status}</span></td>
+              <td style="font-size:11px;color:var(--muted);">${formatTime(o.created_at)}</td>
+              <td>
+                ${o.status === 'confirmed' ? `<button class="action-btn" onclick="updateStatus(${o.id},'preparing')">🍳 Prepare</button>` : ''}
+                ${o.status === 'preparing' ? `<button class="action-btn deliver" onclick="updateStatus(${o.id},'delivered')">✅ Deliver</button>` : ''}
+                ${o.status !== 'cancelled' && o.status !== 'delivered' ? `<button class="action-btn" onclick="updateStatus(${o.id},'cancelled')" style="color:var(--red);">✕</button>` : ''}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+
+    // Also update mini recent orders on dashboard
+    const mini = orders.slice(0, 5);
+    document.getElementById('recent-orders-mini').innerHTML = `
+      <table>
+        <thead><tr><th>#</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+          ${mini.map(o => `
+            <tr>
+              <td style="color:var(--muted);font-size:12px;">#${o.id}</td>
+              <td style="font-size:12px;">${o.items.map(i=>`${i.qty}× ${i.name}`).join(', ')}</td>
+              <td style="color:var(--accent2);font-weight:700;">Rs.${o.total}</td>
+              <td><span class="badge badge-${o.status}" style="font-size:10px;">${o.status}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } catch(e) { console.error(e); }
+}
+
+async function updateStatus(id, status) {
+  await fetch(`${API}/orders/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  showToast(`Order #${id} marked as ${status}`, statusIcon(status));
+  loadOrders(currentFilter);
+  loadStats();
+}
+
+// ── Customers ─────────────────────────────────────────────────────────────────
+async function loadCustomers() {
+  try {
+    const res = await fetch(API + '/customers');
+    const customers = await res.json();
+
+    if (customers.length === 0) {
+      document.getElementById('customers-table').innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>No customers yet</p></div>';
+      return;
+    }
+
+    document.getElementById('customers-table').innerHTML = `
+      <table>
+        <thead>
+          <tr><th>Customer</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Last Seen</th><th></th></tr>
+        </thead>
+        <tbody>
+          ${customers.map(c => `
+            <tr>
+              <td>
+                <div class="customer-info">
+                  <div class="customer-avatar">${(c.phone || '?')[0]}</div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;">${c.name || 'Unknown'}</div>
+                    <div style="font-size:11px;color:var(--muted);">Customer</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="phone-chip">${c.phone.replace('whatsapp:','')}</span></td>
+              <td><strong>${c.total_orders}</strong></td>
+              <td style="color:var(--accent2);font-weight:700;">Rs. ${c.total_spent}</td>
+              <td style="font-size:12px;color:var(--muted);">${formatTime(c.last_seen)}</td>
+              <td>
+                <button class="action-btn" onclick="viewChat('${c.phone}')">💬 Chat</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } catch(e) { console.error(e); }
+}
+
+// ── Conversations ─────────────────────────────────────────────────────────────
+async function loadConversationList() {
+  try {
+    const res = await fetch(API + '/customers');
+    const customers = await res.json();
+    document.getElementById('chat-list-items').innerHTML = customers.map(c => `
+      <div class="chat-item" onclick="viewChat('${c.phone}')">
+        <div class="chat-item-phone">${c.phone.replace('whatsapp:','')}</div>
+        <div class="chat-item-preview">${c.total_orders} order(s) · Rs.${c.total_spent}</div>
+        <div class="chat-item-time">${formatTime(c.last_seen)}</div>
+      </div>
+    `).join('') || '<div class="loading">No conversations yet</div>';
+  } catch(e) { console.error(e); }
+}
+
+async function viewChat(phone) {
+  navigate('conversations');
+  document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
+  
+  document.getElementById('chat-content').innerHTML = `<div class="loading"><div class="spinner"></div> Loading conversation...</div>`;
+  document.getElementById('chat-content').className = '';
+  document.getElementById('chat-content').style.cssText = 'display:flex;flex-direction:column;height:100%;';
+
+  try {
+    const encodedPhone = phone.replace('+', '-');
+    const res = await fetch(`${API}/conversations/${encodedPhone}`);
+    const msgs = await res.json();
+
+    document.getElementById('chat-content').innerHTML = `
+      <div style="padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+        <div class="customer-avatar" style="width:38px;height:38px;">${phone[0]}</div>
+        <div>
+          <div style="font-weight:600;font-size:14px;">${phone.replace('whatsapp:','')}</div>
+          <div style="font-size:11px;color:var(--muted);">${msgs.length} messages</div>
+        </div>
+      </div>
+      <div class="chat-messages scrollbar-hide" id="msg-list">
+        ${msgs.length === 0 ? '<div class="chat-empty"><div class="icon">💬</div><p>No messages yet</p></div>' :
+          msgs.map(m => `
+            <div>
+              <div class="msg ${m.role}">
+                ${m.message}
+              </div>
+              <div class="msg-time" style="${m.role === 'assistant' ? 'text-align:right' : ''}">${formatTime(m.created_at)}</div>
+            </div>
+          `).join('')
+        }
+      </div>
+    `;
+    const ml = document.getElementById('msg-list');
+    if (ml) ml.scrollTop = ml.scrollHeight;
+  } catch(e) { console.error(e); }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function statusIcon(s) {
+  return {'confirmed':'🆕','preparing':'🍳','delivered':'✅','cancelled':'❌'}[s] || '•';
+}
+
+function formatTime(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  const now = new Date();
+  const diff = (now - d) / 1000;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return d.toLocaleDateString();
+}
+
+function refreshAll() {
+  loadStats();
+  loadOrders('');
+  showToast('Data refreshed!', '🔄');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadStats();
+loadOrders('');
+
+// Auto-refresh every 30s
+setInterval(() => {
+  loadStats();
+  if (document.getElementById('page-orders').classList.contains('active')) {
+    loadOrders(currentFilter);
+  }
+}, 30000);
+</script>
+
+<script>
+// Menu cards helper - inline for single-file dashboard
+function buildMenuCards() { return ''; }
+// Actually build inline:
+document.addEventListener('DOMContentLoaded', () => {
+  const menu = [
+    { name: 'Chicken Momo', price: 120, emoji: '🥟', desc: 'Steamed dumplings with spiced chicken filling' },
+    { name: 'Veg Momo', price: 100, emoji: '🥟', desc: 'Steamed dumplings with fresh vegetable filling' },
+    { name: 'Chowmein', price: 150, emoji: '🍜', desc: 'Stir-fried noodles with vegetables and spices' },
+    { name: 'Pizza (Medium)', price: 400, emoji: '🍕', desc: 'Classic pizza with fresh toppings, serves 2' },
+    { name: 'Pizza (Large)', price: 700, emoji: '🍕', desc: 'Large pizza with fresh toppings, serves 4' },
+    { name: 'Coke', price: 50, emoji: '🥤', desc: 'Chilled Coca-Cola can, 330ml' },
+  ];
+  document.querySelector('#page-menu > div:last-child').innerHTML = menu.map(item => `
+    <div class="section" style="padding:24px;">
+      <div style="font-size:40px;margin-bottom:12px;">${item.emoji}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px;">${item.name}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;">${item.desc}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent2);">Rs. ${item.price}</span>
+        <span class="badge badge-confirmed">✅ Available</span>
+      </div>
+    </div>
+  `).join('');
+});
+</script>
+</body>
+</html>
