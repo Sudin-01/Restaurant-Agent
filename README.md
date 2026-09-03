@@ -1,15 +1,3 @@
-<!-- Hugging Face Spaces reads this block to configure the Docker Space. -->
-<!-- It is harmless on GitHub. Do not remove it if you deploy to HF Spaces. -->
----
-title: Restaurant Agent
-emoji: 🍜
-colorFrom: red
-colorTo: yellow
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 # 🍜 Restaurant Agent — AI WhatsApp Ordering Bot
 
 A WhatsApp assistant that takes restaurant orders in natural conversation. Customers message the

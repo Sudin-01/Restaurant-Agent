@@ -1,0 +1,19 @@
+# Render Blueprint — free Docker web service.
+# In Render: New → Blueprint → pick this repo. It reads the Dockerfile and
+# prompts for the secret values below (they are not stored in git).
+services:
+  - type: web
+    name: restaurant-agent
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false          # entered in the Render dashboard, not committed
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_NUMBER
+        value: "whatsapp:+14155238886"

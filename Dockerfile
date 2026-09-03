@@ -1,5 +1,5 @@
-# ── Restaurant Agent — Hugging Face Spaces (Docker SDK) ───────────────────────
-# HF Spaces expects the app to listen on port 7860.
+# ── Restaurant Agent — Docker image for Render / any Docker host ──────────────
+# Binds to $PORT if the host sets one (Render does), else defaults to 7860.
 
 FROM python:3.12-slim
 
@@ -11,14 +11,16 @@ RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 # to itself, so the backend/ and frontend/ layout must be preserved.
 COPY . /app
 
-# HF Spaces runs the container as uid 1000. Give that user ownership so the
-# SQLite database (created under /app/db at runtime) is writable.
+# Run as an unprivileged user. uid 1000 also keeps /app/db writable on hosts
+# (like HF Spaces) that run the container as that uid.
 RUN useradd -m -u 1000 user && chown -R user:user /app
 USER user
 
 WORKDIR /app/backend
+ENV PORT=7860
 EXPOSE 7860
 
-# 2 workers is plenty for a demo. --timeout 120 leaves room for slow Gemini
-# replies. wsgi:app runs init_db() on import (see wsgi.py).
-CMD ["gunicorn", "--bind", "0.0.0.0:7860", "--workers", "2", "--timeout", "120", "wsgi:app"]
+# Shell form so $PORT expands. Render injects its own $PORT; elsewhere it falls
+# back to 7860. --timeout 120 leaves room for slow Gemini replies. wsgi:app runs
+# init_db() on import (see wsgi.py).
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 wsgi:app
