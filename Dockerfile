@@ -23,4 +23,8 @@ EXPOSE 7860
 # Shell form so $PORT expands. Render injects its own $PORT; elsewhere it falls
 # back to 7860. --timeout 120 leaves room for slow Gemini replies. wsgi:app runs
 # init_db() on import (see wsgi.py).
-CMD gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 wsgi:app
+#
+# ONE worker on purpose: SQLite does not tolerate concurrent writers across
+# processes on Render's filesystem ("database is locked"). --threads 4 keeps
+# the single worker able to handle overlapping requests.
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 wsgi:app

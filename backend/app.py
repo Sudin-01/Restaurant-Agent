@@ -550,7 +550,12 @@ Always output a JSON block at the END of your reply in this exact format (hidden
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'db', 'restaurant.db')
 
 def get_conn():
-    return sqlite3.connect(DB_PATH)
+    # timeout: wait up to 10s for a lock instead of raising "database is locked".
+    # WAL lets reads and a write proceed concurrently across threads.
+    conn = sqlite3.connect(DB_PATH, timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=10000")
+    return conn
 
 def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -725,7 +730,9 @@ def webhook():
     try:
         ai_reply = get_ai_response(from_number, incoming_msg)
     except Exception as e:
-        print(f"[ERROR] {e}")
+        import traceback
+        print(f"[ERROR] webhook failed: {e}")
+        traceback.print_exc()
         ai_reply = "Sorry, I'm having a little trouble right now. Please try again! 🙏"
 
     resp = MessagingResponse()
