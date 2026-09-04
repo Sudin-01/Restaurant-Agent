@@ -22,6 +22,92 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* ── WhatsApp scanner modal ── */
+  .scanner-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .scanner-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    max-width: 400px;
+    width: 100%;
+    padding: 28px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  .scanner-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .scanner-close:hover { color: var(--text); border-color: var(--accent); }
+  .scanner-modal h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+  .scanner-modal .scanner-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .scanner-qr {
+    width: 240px;
+    height: 240px;
+    max-width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    display: block;
+    margin: 0 auto 20px;
+    object-fit: contain;
+  }
+  .scanner-steps {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .scanner-steps b { color: var(--accent2); }
+  .scanner-code {
+    display: inline-block;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1px 8px;
+    font-family: monospace;
+    color: var(--green);
+  }
+  .scanner-number {
+    color: var(--accent);
+    font-weight: 700;
+    font-family: monospace;
+  }
+
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--bg);
@@ -580,6 +666,9 @@
     <div class="nav-item" onclick="navigate('menu')">
       <span class="nav-icon">🍽️</span> Menu
     </div>
+    <div class="nav-item" onclick="openScanner()">
+      <span class="nav-icon">📱</span> WhatsApp Scanner
+    </div>
   </nav>
 
   <div class="sidebar-footer">
@@ -1034,6 +1123,35 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   `).join('');
 });
+</script>
+
+<!-- ── WhatsApp Scanner Modal ── -->
+<div class="scanner-overlay" id="scanner-overlay" hidden onclick="if(event.target===this)closeScanner()">
+  <div class="scanner-modal">
+    <button class="scanner-close" onclick="closeScanner()" aria-label="Close">✕</button>
+    <h2>📱 Try the Restaurant Agent</h2>
+    <p class="scanner-sub">Scan to see how the restaurant agent works</p>
+    <img class="scanner-qr" src="/whatsapp-qr.png" alt="WhatsApp QR code">
+    <div class="scanner-steps">
+      1. Scan the QR code with your phone camera.<br>
+      2. It opens WhatsApp to <span class="scanner-number">+1 415 523 8886</span>.<br>
+      3. First, send <span class="scanner-code">join improve-island</span> to activate the bot.<br>
+      4. Then just say <b>hi</b> and start ordering! 🥟
+    </div>
+  </div>
+</div>
+
+<script>
+function openScanner() {
+  document.getElementById('scanner-overlay').hidden = false;
+}
+function closeScanner() {
+  document.getElementById('scanner-overlay').hidden = true;
+}
+// Show the scanner automatically as soon as the dashboard opens.
+document.addEventListener('DOMContentLoaded', openScanner);
+// Close on Escape.
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeScanner(); });
 </script>
 </body>
 </html>
