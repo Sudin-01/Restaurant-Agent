@@ -3,6 +3,9 @@
 
 FROM python:3.12-slim
 
+# Flush stdout/stderr immediately so [ERROR] tracebacks show in Render's logs.
+ENV PYTHONUNBUFFERED=1
+
 # Install dependencies first so this layer is cached across code changes.
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
