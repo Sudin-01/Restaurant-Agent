@@ -463,6 +463,7 @@ import sqlite3
 import os
 import json
 import re
+import time
 from datetime import datetime
 from google import genai
 from dotenv import load_dotenv
@@ -695,11 +696,29 @@ def get_ai_response(phone, user_message):
         role = "model" if msg["role"] == "assistant" else "user"
         gemini_history.append({"role": role, "parts": [{"text": msg["content"]}]})
 
-    response = client.models.generate_content(
-        model="gemini-3.5-flash-lite",
-        config={"system_instruction": SYSTEM_PROMPT},
-        contents=gemini_history + [{"role": "user", "parts": [{"text": context_message}]}],
-    )
+    # Gemini's free tier returns transient 503 (overloaded) and 429 (rate)
+    # errors. Retry a few times with backoff before giving up, staying well
+    # within Twilio's webhook timeout.
+    contents = gemini_history + [{"role": "user", "parts": [{"text": context_message}]}]
+    last_err = None
+    for attempt in range(4):
+        try:
+            response = client.models.generate_content(
+                model="gemini-3.5-flash-lite",
+                config={"system_instruction": SYSTEM_PROMPT},
+                contents=contents,
+            )
+            break
+        except Exception as e:
+            last_err = e
+            code = getattr(e, "code", None)
+            if code in (429, 503) or "RESOURCE_EXHAUSTED" in str(e) or "UNAVAILABLE" in str(e):
+                if attempt < 3:
+                    time.sleep(1.5 * (attempt + 1))  # 1.5s, 3s, 4.5s
+                    continue
+            raise
+    else:
+        raise last_err
 
     full_response   = response.text
     new_order_state = extract_order_state(full_response)
