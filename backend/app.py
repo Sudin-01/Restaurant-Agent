@@ -696,7 +696,7 @@ def get_ai_response(phone, user_message):
         gemini_history.append({"role": role, "parts": [{"text": msg["content"]}]})
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.5-flash-lite",
         config={"system_instruction": SYSTEM_PROMPT},
         contents=gemini_history + [{"role": "user", "parts": [{"text": context_message}]}],
     )
